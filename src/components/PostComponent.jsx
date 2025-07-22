@@ -8,14 +8,21 @@ import axios from "axios";
 import { BASE_URL } from "../constanst";
 import { BiSolidLike } from "react-icons/bi";
 import { useSelector } from "react-redux";
+import { IoSend } from "react-icons/io5";
 
 function PostComponent({ post, getShortTimeAgo, setPosts }) {
+  const [newComment, setNewComment] = useState("");
+  const [openParagraph, setOpenParagraph] = useState(false);
+  const [openCommentSection, setOpenCommentSection] = useState(false);
   const user = useSelector((store) => store.userData);
 
   const { profileImage, firstName, lastName, headline } = post.author;
   const { _id, postDescription, likes, comments, createdAt, imageUrl } = post;
   const postedTime = getShortTimeAgo(createdAt);
-  const [openParagraph, setOpenParagraph] = useState(false);
+
+  const reversedComments = [...comments].reverse();
+
+  // console.log(post);
 
   const handleLike = async (postId) => {
     try {
@@ -36,8 +43,32 @@ function PostComponent({ post, getShortTimeAgo, setPosts }) {
     }
   };
 
+  const handleCommentUpload = async (postId) => {
+    try {
+      const res = await axios.patch(
+        BASE_URL + `/post/comment/${postId}`,
+        { comment: newComment },
+        { withCredentials: true }
+      );
+
+      const commentedPost = res?.data?.data;
+
+      console.log(commentedPost);
+
+      setPosts((prev) => {
+        return prev.map((post) =>
+          post._id === commentedPost._id ? commentedPost : post
+        );
+      });
+      setNewComment("");
+    } catch (error) {
+      console.log(error);
+      console.log("Error in HandleCommentUpload function");
+    }
+  };
+
   return (
-    <div className="bg-white  my-4 rounded px-4 pt-3" >
+    <div className="bg-white  my-4 rounded px-4 pt-3 pb-1">
       <div className="flex gap-2 py-2">
         <img
           src={profileImage}
@@ -84,7 +115,9 @@ function PostComponent({ post, getShortTimeAgo, setPosts }) {
         <span className="flex items-center gap-1">
           {likes.length} <BiLike className="text-blue-500 text-lg" />{" "}
         </span>
-        <span className="flex items-center">{comments.length} comments</span>
+        <span className="flex items-center">
+          {comments.length} {comments.length === 1 ? "comment" : "comments"}
+        </span>
       </div>
       <hr className="border-gray-300" />
       <div className="flex justify-between items-center px-2 py-1 gap-4">
@@ -104,7 +137,10 @@ function PostComponent({ post, getShortTimeAgo, setPosts }) {
             </>
           )}
         </span>
-        <span className="grow flex gap-1 items-center justify-center py-2 text-center font-medium  hover:bg-gray-200 cursor-pointer">
+        <span
+          className="grow flex gap-1 items-center justify-center py-2 text-center font-medium  hover:bg-gray-200 cursor-pointer"
+          onClick={() => setOpenCommentSection((prev) => !prev)}
+        >
           <FaRegCommentDots className="text-base mt-1" />{" "}
           <span className="text-[14px]">Commnent</span>
         </span>
@@ -116,6 +152,60 @@ function PostComponent({ post, getShortTimeAgo, setPosts }) {
           <IoNavigate className="text-base" />{" "}
           <span className="text-[14px]">Share</span>
         </span>
+      </div>
+      <div
+        className={
+          openCommentSection ? "comment-transition on  " : "comment-transition"
+        }
+      >
+        <div className="flex items-center gap-2 pt-2 pb-3  ">
+          <img
+            src={user.profileImage}
+            alt="user profile photo"
+            className="w-9 h-9 shrink-0 rounded-full object-cover  object-top"
+          />
+          <div className="flex grow py-0.5 items-center gap-4 rounded-3xl border-gray-400 border-2 px-2  ">
+            <input
+              type="text"
+              className=" grow  focus:outline-0 px-1 py-1  text-[14px]"
+              placeholder="Add a comment"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+            />
+            <button
+              className="cursor-pointer"
+              onClick={() => handleCommentUpload(_id)}
+            >
+              <IoSend />
+            </button>
+          </div>
+        </div>
+        {comments.length
+          ? reversedComments.map((comment) => {
+              const { profileImage, firstName, lastName, headline } =
+                comment.user;
+              return (
+                <div className="flex gap-2 pb-2" key={comment._id}>
+                  <img
+                    src={profileImage}
+                    alt="profile photo "
+                    className="w-8 h-8 object-cover object-top rounded-full shrink-0"
+                  />
+                  <div className="flex flex-col">
+                    <span className="font-medium text-[14px] leading-5">
+                      {firstName + " " + lastName}
+                    </span>
+                    {headline && (
+                      <span className="line-clamp-1 text-[12px] text-gray-500 pr-2">
+                        {headline}
+                      </span>
+                    )}
+                    <p className="py-2 text-sm">{comment?.content}</p>
+                  </div>
+                </div>
+              );
+            })
+          : ""}
       </div>
     </div>
   );

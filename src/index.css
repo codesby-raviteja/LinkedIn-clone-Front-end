@@ -1,6 +1,23 @@
 @import "tailwindcss";
 
 .icon-font {
-    font-size: 1.25rem;
-font-size: clamp(1.25rem, 1.7470873786407766rem + -0.41423948220064716vw, 1.5rem);
+  font-size: 1.25rem;
+  font-size: clamp(
+    1.25rem,
+    1.7470873786407766rem + -0.41423948220064716vw,
+    1.5rem
+  );
+}
+
+.comment-transition {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 300ms ease, opacity 300ms ease;
+}
+
+.comment-transition.on {
+  max-height: 1000px;
+  opacity: 1;
+  transition: max-height 300ms ease, opacity 300ms ease;
 }
