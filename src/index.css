@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+.icon-font {
+    font-size: 1.25rem;
+font-size: clamp(1.25rem, 1.7470873786407766rem + -0.41423948220064716vw, 1.5rem);
+}
