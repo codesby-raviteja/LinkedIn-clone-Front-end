@@ -1,45 +1,45 @@
-import React, { useEffect, useRef, useState } from "react"
-import { Link } from "react-router-dom"
-import Logo from "../assets/logo.svg"
-import { IoSearchSharp } from "react-icons/io5"
-import { FaHouse } from "react-icons/fa6"
-import { IoPeople } from "react-icons/io5"
+import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import Logo from "../assets/logo.svg";
+import { IoSearchSharp } from "react-icons/io5";
+import { FaHouse } from "react-icons/fa6";
+import { IoPeople } from "react-icons/io5";
 
-import { TiMessageTyping } from "react-icons/ti"
-import { FaBell } from "react-icons/fa6"
+import { TiMessageTyping } from "react-icons/ti";
+import { FaBell } from "react-icons/fa6";
 
-import NavIcon from "./NavIcon"
-import ProfileCard from "./ProfileCard"
-import { useSelector } from "react-redux"
+import NavIcon from "./NavIcon";
+import ProfileCard from "./ProfileCard";
+import { useSelector } from "react-redux";
 
 const Navbar = () => {
-  const [openSearchbar, setOpenSearchbar] = useState(false)
-  const [openProfileCard, setOpenProfileCard] = useState(false)
-  const headerRef = useRef()
-  const userData = useSelector((state) => state.userData)
+  const [openSearchbar, setOpenSearchbar] = useState(false);
+  const [openProfileCard, setOpenProfileCard] = useState(false);
+  const headerRef = useRef();
+  const userData = useSelector((state) => state.userData);
 
   useEffect(() => {
     const windowResize = function (e) {
       if (window.innerWidth > 735) {
-        setOpenSearchbar(false)
+        setOpenSearchbar(false);
       }
-    }
+    };
     const windowClick = (e) => {
       if (headerRef.current && headerRef.current.contains(e.target)) {
-        return
+        return;
       }
-      setOpenProfileCard(false)
-      setOpenSearchbar(false)
-    }
+      setOpenProfileCard(false);
+      setOpenSearchbar(false);
+    };
 
-    window.addEventListener("resize", windowResize)
-    window.addEventListener("click", windowClick)
+    window.addEventListener("resize", windowResize);
+    window.addEventListener("click", windowClick);
 
     return () => {
-      window.removeEventListener("resize", windowResize)
-      window.removeEventListener("click", windowClick)
-    }
-  }, [])
+      window.removeEventListener("resize", windowResize);
+      window.removeEventListener("click", windowClick);
+    };
+  }, []);
 
   return (
     <header
@@ -77,8 +77,8 @@ const Navbar = () => {
               openSearchbar ? "hidden" : "block"
             } md:hidden text-2xl ml-0.5 cursor-pointer`}
             onClick={() => {
-              setOpenSearchbar(true)
-              setOpenProfileCard(false)
+              setOpenSearchbar(true);
+              setOpenProfileCard(false);
             }}
           />
         </div>
@@ -88,7 +88,9 @@ const Navbar = () => {
           } text-base  gap-8 md:gap-6 lg:gap-12  items-center `}
         >
           <NavIcon ICON={FaHouse} text={"Home"} />
-          <NavIcon ICON={IoPeople} text={"My Network"} />
+          <Link to={"/network"}>
+            <NavIcon ICON={IoPeople} text={"My Network"} />
+          </Link>
           <NavIcon ICON={TiMessageTyping} text={"Messaging"} />
           <NavIcon ICON={FaBell} text={"Notifications"} />
           <img
@@ -98,7 +100,7 @@ const Navbar = () => {
             height="36"
             alt=""
             onClick={() => {
-              setOpenProfileCard((prev) => !prev)
+              setOpenProfileCard((prev) => !prev);
             }}
           ></img>
         </nav>
@@ -107,7 +109,7 @@ const Navbar = () => {
         )}
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;
