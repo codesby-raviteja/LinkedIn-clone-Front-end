@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CreateNewPost from "./CreateNewPost";
 import axios from "axios";
 import { BASE_URL } from "../constanst";
@@ -9,14 +9,38 @@ import {
   differenceInHours,
   differenceInMinutes,
 } from "date-fns";
+import { io } from "socket.io-client";
 
 function PostsInFeed({ user }) {
   const [openCreatePost, setOpenCreatePost] = useState(false);
-
   const [posts, setPosts] = useState();
+
+  const socketRef = useRef();
 
   useEffect(() => {
     fetchPosts();
+  }, []);
+
+  useEffect(() => {
+    const socket = io("http://localhost:3000");
+    socketRef.current = socket;
+
+    const socketHandler = (updatedPost) => {
+      console.log("post updated notified with socket.io");
+      console.log(updatedPost);
+      setPosts((prev) => {
+        return prev.map((post) =>
+          post._id === updatedPost._id ? updatedPost : post
+        );
+      });
+    };
+
+    socket.on("receivedUpdate", socketHandler);
+
+    return () => {
+      socket.disconnect();
+      socket.removeListener("receivedUpdate", socketHandler);
+    };
   }, []);
 
   const fetchPosts = async () => {

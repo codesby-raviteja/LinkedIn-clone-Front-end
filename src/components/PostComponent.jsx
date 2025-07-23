@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BiLike } from "react-icons/bi";
 import { LuThumbsUp } from "react-icons/lu";
 import { FaRegCommentDots } from "react-icons/fa";
@@ -9,6 +9,7 @@ import { BASE_URL } from "../constanst";
 import { BiSolidLike } from "react-icons/bi";
 import { useSelector } from "react-redux";
 import { IoSend } from "react-icons/io5";
+import { IoMdAdd } from "react-icons/io";
 
 function PostComponent({ post, getShortTimeAgo, setPosts }) {
   const [newComment, setNewComment] = useState("");
@@ -16,13 +17,37 @@ function PostComponent({ post, getShortTimeAgo, setPosts }) {
   const [openCommentSection, setOpenCommentSection] = useState(false);
   const user = useSelector((store) => store.userData);
 
-  const { profileImage, firstName, lastName, headline } = post.author;
+  const {
+    profileImage,
+    firstName,
+    lastName,
+    headline,
+    _id: authorId,
+  } = post.author;
+
   const { _id, postDescription, likes, comments, createdAt, imageUrl } = post;
   const postedTime = getShortTimeAgo(createdAt);
 
   const reversedComments = [...comments].reverse();
+  const [doesConnectionExits, setDoesConnectionExists] = useState(null);
 
-  // console.log(post);
+  useEffect(() => {
+    if (user._id !== authorId) {
+      checkConnection();
+    }
+  }, []);
+
+  const checkConnection = async () => {
+    try {
+      const res = await axios.get(BASE_URL + `/check/connection/${authorId}`, {
+        withCredentials: true,
+      });
+
+      setDoesConnectionExists(res?.data?.connectionExists);
+    } catch (error) {
+      console.log("error in checking connection");
+    }
+  };
 
   const handleLike = async (postId) => {
     try {
@@ -31,13 +56,6 @@ function PostComponent({ post, getShortTimeAgo, setPosts }) {
         {},
         { withCredentials: true }
       );
-
-      const likedPost = res?.data?.data;
-      setPosts((prev) => {
-        return prev.map((post) =>
-          post._id === likedPost._id ? likedPost : post
-        );
-      });
     } catch (error) {
       console.log("Error in HandleLike function");
     }
@@ -50,16 +68,6 @@ function PostComponent({ post, getShortTimeAgo, setPosts }) {
         { comment: newComment },
         { withCredentials: true }
       );
-
-      const commentedPost = res?.data?.data;
-
-      console.log(commentedPost);
-
-      setPosts((prev) => {
-        return prev.map((post) =>
-          post._id === commentedPost._id ? commentedPost : post
-        );
-      });
       setNewComment("");
     } catch (error) {
       console.log(error);
@@ -67,27 +75,54 @@ function PostComponent({ post, getShortTimeAgo, setPosts }) {
     }
   };
 
+  const handleFollow = async () => {
+    try {
+      try {
+        const res = await axios.post(
+          BASE_URL + `/connect/${authorId}`,
+          {},
+          { withCredentials: true }
+        );
+        setDoesConnectionExists(true);
+      } catch (error) {
+        console.log(error);
+        console.log("Error in HandleFollow function");
+      }
+    } catch (error) {}
+  };
+
   return (
     <div className="bg-white  my-4 rounded px-4 pt-3 pb-1">
-      <div className="flex gap-2 py-2">
-        <img
-          src={profileImage}
-          alt="profile photo "
-          className="w-12 h-12 object-cover object-top rounded-full shrink-0"
-        />
-        <div className="flex flex-col">
-          <span className="font-medium leading-5">
-            {firstName + " " + lastName}
-          </span>
-          {headline && (
-            <span className="line-clamp-1 text-sm text-gray-500">
-              {headline}
+      <div className="flex gap-2 py-2 justify-between items-start">
+        <div className="flex gap-2 py-2">
+          <img
+            src={profileImage}
+            alt="profile photo "
+            className="w-12 h-12 object-cover object-top rounded-full shrink-0"
+          />
+          <div className="flex flex-col">
+            <span className="font-medium leading-5">
+              {firstName + " " + lastName}
             </span>
-          )}
-          <span className="text-[13px] font-normal text-gray-500  ">
-            {postedTime} •{" "}
-          </span>
+            {headline && (
+              <span className="line-clamp-1 text-sm text-gray-500 pr-2">
+                {headline}
+              </span>
+            )}
+            <span className="text-[13px] font-normal text-gray-500  ">
+              {postedTime} •{" "}
+            </span>
+          </div>
         </div>
+        {!(user._id === authorId) && !doesConnectionExits && (
+          <button
+            className="flex max-h-fit items-center text-blue-500 cursor-pointer hover:bg-blue-100 p-1 rounded "
+            onClick={handleFollow}
+          >
+            <IoMdAdd className="text-[1.4rem] font-extrabold" />
+            <span className="text-[1.1rem] font-medium">Follow</span>
+          </button>
+        )}
       </div>
       <div className="flex py-2">
         <p className={openParagraph ? " " : `line-clamp-2 `}>
